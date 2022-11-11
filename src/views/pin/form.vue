@@ -254,6 +254,9 @@ export default {
       cSign: newGuid(),
       form: {
         cBarcode: '',
+        cPosCode: '',
+        cPosName: '',
+
         cInvCode: '',
         cInvName: '',
         cInvStd: '',
@@ -465,7 +468,19 @@ export default {
           this.setFocus()
         })
     },
-    queryInv() {
+    queryInv() { 
+      if (this.control.usePos && this.form.cPosCode == '') {
+        return this.$toast({
+          type: 'fail',
+          message: '请先扫描货位',
+          onOpened: () => {
+            this.form.cBarcode = ''
+            this.curEle = 'ele_cPosName'
+            this.setFocus()
+          }
+        })
+      }
+
       if (this.form.cBarcode == '') {
         return this.$toast({
           type: 'fail',
@@ -503,6 +518,7 @@ export default {
               FInvStd,
               FComUnitCode,
               FComUnitName,
+              FBatch,
               bInvBatch,
               bInvQuality,
               iMassDate,
@@ -527,6 +543,7 @@ export default {
             this.form.cInvStd = FInvStd
             this.form.cComUnitCode = FComUnitCode
             this.form.cComUnitName = FComUnitName
+            this.form.cBatch = FBatch
             this.form.iQuantity = iQuantity
             this.form.iStockQuantity = iStockQuantity
 
@@ -771,7 +788,7 @@ export default {
   }
 
   .list1 {
-    height: calc(100vh - 260px);
+    height: calc(100vh - 255px);
     overflow: scroll;
   }
 

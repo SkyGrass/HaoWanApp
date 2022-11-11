@@ -52,6 +52,9 @@
               @focus="onFocus"
               @click="onFocus"
               @keyup.enter="queryPos"
+            >
+              <template #button>
+                <van-icon name="photograph" color="#008577" size="25" @click="doScan('ele_cPosName')" /> </template
             ></van-field>
 
             <van-field
@@ -61,12 +64,16 @@
               ref="ele_cBarcode"
               v-model="form.cBarcode"
               autocomplete="off"
-              placeholder="扫描或录入箱号条码"
+              placeholder="扫描或录入条码"
               id="ele_cBarcode"
               @focus="onFocus"
               @click="onFocus"
               @keyup.enter="queryInv"
-            ></van-field>
+            >
+              <template #button>
+                <van-icon name="photograph" color="#008577" size="25" @click="doScan('ele_cBarcode')" />
+              </template>
+            </van-field>
             <van-field
               name="cInvCode"
               label="存货编码"
@@ -161,7 +168,7 @@
               @click="onDelete(index)"
             >
               <li style="padding: 2px">行号：{{ item.iRowno }}</li>
-              <li style="padding: 2px">箱号{{ item.cBoxNO }}</li>
+              <li style="padding: 2px">条码{{ item.barcode }}</li>
               <li style="padding: 2px">存货编码：{{ item.cInvCode }}</li>
               <li style="padding: 2px">存货名称：{{ item.cInvName }}</li>
               <li style="padding: 2px">规格型号：{{ item.cInvStd }}</li>
@@ -272,7 +279,7 @@ export default {
       form: {
         iRowno: '',
 
-        cBoxNO: '',
+        barcode: '',
 
         cPosCode: '',
         cPosName: '',
@@ -341,21 +348,6 @@ export default {
       this.clearForm()
     },
     onSubmit() {
-      const exist = this.cacheList.filter(f => {
-        return f.cBoxNO == this.form.cBoxNO
-      })
-      if (exist.length > 0) {
-        return this.$toast({
-          type: 'fail',
-          message: '当前箱号已扫描!',
-          onOpened: () => {
-            this.form.cBarcode = ''
-            this.curEle = 'ele_cBarcode'
-            this.setFocus()
-          }
-        })
-      }
-
       // 红字检查库存
       if (!this.checkStock()) {
         this.curEle = 'ele_cBarcode'
@@ -410,18 +402,12 @@ export default {
                   cWhCode: m.cWhCode,
                   cRdCode: m.cRdCode,
                   cDepCode: m.cDepCode,
-                  cMemo: m.cMemo,
-                  cPersonCode: '',
-                  cPersonName: '',
-                  cLoader: '',
-                  cCarNo: '',
-                  cCarType: ''
+                  cMemo: m.cMemo
                 }
               })[0],
               {
                 Entry: this.cacheList.map(m => {
                   return {
-                    cBoxNO: m.cBoxNO,
                     cSourceBillID: m.cSourceBillID,
                     cSourceBillNo: m.cSourceBillNo,
                     cSourceBillEntryID: m.cSourceBillEntryID,
@@ -446,11 +432,7 @@ export default {
                 message: '提交成功!',
                 onClose: () => {
                   this.submitLoading = false
-                  this.$router.go(-1)
-                  // this.onLoad()
-                  // this.cacheList = []
-                  // this.active = 0
-                  // this.cSign = newGuid()
+                  this.$router.go(-1) 
                 }
               })
             })
@@ -459,6 +441,12 @@ export default {
             })
         })
         .catch(e => {})
+    },
+    doScan(e) {
+      if (window.android) {
+        this.curEle = e
+        android.openScan(e)
+      }
     },
     openWarehouse() {
       if (this.forbidden) {
@@ -549,6 +537,7 @@ export default {
           message: '请先扫描货位',
           onOpened: () => {
             this.form.cBarcode = ''
+            this.curEle = 'ele_cPosName'
             this.setFocus()
           }
         })
@@ -556,7 +545,7 @@ export default {
       if (this.form.cBarcode == '') {
         return this.$toast({
           type: 'fail',
-          message: '请先扫描箱号条码',
+          message: '请先扫描条码条码',
           onOpened: () => {
             this.form.cBarcode = ''
             this.curEle = 'ele_cBarcode'
@@ -565,12 +554,12 @@ export default {
         })
       }
       const exist = this.cacheList.filter(f => {
-        return f.cBoxNO == this.form.cBarcode
+        return f.barcode == this.form.cBarcode
       })
       if (exist.length > 0) {
         return this.$toast({
           type: 'fail',
-          message: '当前箱号已扫描!',
+          message: '当前条码已扫描!',
           onOpened: () => {
             this.form.cBarcode = ''
             this.curEle = 'ele_cBarcode'
@@ -584,195 +573,109 @@ export default {
         .then(({ Data }) => {
           if (Data.length > 0) {
             const {
+              FMOCode,
+              FMOID,
+              FMODID,
+              FMORowNo,
+              FInvCode,
+              FInvName,
+              FInvStd,
+              FComUnitCode,
+              FComUnitName,
+              FBatch,
               bInvBatch,
               bInvQuality,
-              cInvCode,
-              cInvName,
-              cInvStd,
-              cComUnitCode,
-              cComUnitName,
-              cBatch,
               iMassDate,
               cMassUnit,
-              iChangRate,
+              iChangRate = 0,
               dMdate,
+              iQuantity = 1,
               iStockQuantity,
-              iGroupType,
-              iQuantity,
-              cErrMsg
+              iGroupType
             } = Data[0]
-            if (cErrMsg != '' && cErrMsg != null) {
-              this.$dialog
-                .confirm({
-                  title: '提示',
-                  message: cErrMsg
-                })
-                .then(() => {
-                  const rows = this.sourceList.filter(f => {
-                    return f.cInvCode == cInvCode
-                  })
-                  if (rows.length > 0) {
-                    const row = rows[0]
 
-                    this.control.useBatch = bInvBatch //是否批次管理
-                    this.control.useQuality = bInvQuality //是否保质期管理
-                    this.control.groupType = iGroupType //单位组类别 0 无换算、 1 固定换算、2 浮动换算
+            const rows = this.sourceList.filter(f => {
+              return f.cInvCode == FInvCode
+            })
+            if (rows.length > 0) {
+              const row = rows[0]
 
-                    this.form.cInvCode = cInvCode
-                    this.form.cInvName = cInvName
-                    this.form.cInvStd = cInvStd
-                    this.form.cComUnitCode = cComUnitCode
-                    this.form.cComUnitName = cComUnitName
-                    this.form.cBatch = cBatch
-                    this.form.iQuantity = iQuantity
-                    this.form.iStockQuantity = iStockQuantity
+              this.control.useBatch = bInvBatch //是否批次管理
+              this.control.useQuality = bInvQuality //是否保质期管理
+              this.control.groupType = iGroupType //单位组类别 0 无换算、 1 固定换算、2 浮动换算
 
-                    //计算保质期
-                    if (bInvQuality) {
-                      this.form.iMassDate = iMassDate
-                      this.form.cMassUnit = cMassUnit
+              this.form.cInvCode = FInvCode
+              this.form.cInvName = FInvName
+              this.form.cInvStd = FInvStd
+              this.form.cComUnitCode = FComUnitCode
+              this.form.cComUnitName = FComUnitName
+              this.form.cBatch = FBatch
+              this.form.iQuantity = iQuantity
+              this.form.iStockQuantity = iStockQuantity
 
-                      this.form.dMdate = dMdate
-                      if (cMassUnit == '1') {
-                        this.form.dVdate = new dayjs(dMdate).add(iMassDate, 'year').format('YYYY-MM-DD')
-                      } else if (cMassUnit == '2') {
-                        this.form.dVdate = new dayjs(dMdate).add(iMassDate, 'month').format('YYYY-MM-DD')
-                      } else if (cMassUnit == '3') {
-                        this.form.dVdate = new dayjs(dMdate).add(iMassDate, 'day').format('YYYY-MM-DD')
-                      }
-                    }
+              //计算保质期
+              if (bInvQuality) {
+                this.form.iMassDate = iMassDate
+                this.form.cMassUnit = cMassUnit
 
-                    this.form.cBoxNO = this.form.cBarcode
-                    this.form.iChangRate = iChangRate
-                    //todo 多计量计算
-                    this.form.iNum = 0
-
-                    const cacheRows = this.cacheList.filter(f => {
-                      return f.cInvCode == cInvCode
-                    })
-                    const total = cacheRows
-                      .map(f => f.iQuantity)
-                      .reduce((sum, item) => {
-                        return floatAdd(sum, item)
-                      }, 0)
-                    this.form.iCommitQuantity = total
-
-                    this.form.iRowno = row.iRowno
-                    this.form.iPlanQuantity = row.iQuantity2
-
-                    this.form.cSourceBillID = row.ID //源单ID
-                    this.form.cSourceBillNo = row.cCode //源单单号
-                    this.form.cSourceBillEntryID = row.Autoid //源单表体ID
-
-                    // if (this.control.usePos) {
-                    //   this.form.cPosName = ''
-                    // } else {
-                    this.form.cBarcode = ''
-                    // }
-                    // this.curEle = 'ele_iQuantity'
-
-                    this.onSubmit()
-                  } else {
-                    this.form.cBarcode = ''
-                    this.curEle = 'ele_cBarcode'
-                    return this.$toast({
-                      type: 'fail',
-                      message: '当前存货不在源单内!',
-                      onOpened: () => {
-                        this.setFocus(true)
-                      }
-                    })
-                  }
-                })
-                .catch(() => {
-                  this.form.cBarcode = ''
-                  this.curEle = 'ele_cBarcode'
-                  this.setFocus()
-                })
-            } else {
-              const rows = this.sourceList.filter(f => {
-                return f.cInvCode == cInvCode
-              })
-              if (rows.length > 0) {
-                const row = rows[0]
-
-                this.control.useBatch = bInvBatch //是否批次管理
-                this.control.useQuality = bInvQuality //是否保质期管理
-                this.control.groupType = iGroupType //单位组类别 0 无换算、 1 固定换算、2 浮动换算
-
-                this.form.cInvCode = cInvCode
-                this.form.cInvName = cInvName
-                this.form.cInvStd = cInvStd
-                this.form.cComUnitCode = cComUnitCode
-                this.form.cComUnitName = cComUnitName
-                this.form.cBatch = cBatch
-                this.form.iQuantity = iQuantity
-                this.form.iStockQuantity = iStockQuantity
-
-                //计算保质期
-                if (bInvQuality) {
-                  this.form.iMassDate = iMassDate
-                  this.form.cMassUnit = cMassUnit
-
-                  this.form.dMdate = dMdate
-                  if (cMassUnit == '1') {
-                    this.form.dVdate = new dayjs(dMdate).add(iMassDate, 'year').format('YYYY-MM-DD')
-                  } else if (cMassUnit == '2') {
-                    this.form.dVdate = new dayjs(dMdate).add(iMassDate, 'month').format('YYYY-MM-DD')
-                  } else if (cMassUnit == '3') {
-                    this.form.dVdate = new dayjs(dMdate).add(iMassDate, 'day').format('YYYY-MM-DD')
-                  }
+                this.form.dMdate = dMdate
+                if (cMassUnit == '1') {
+                  this.form.dVdate = new dayjs(dMdate).add(iMassDate, 'year').format('YYYY-MM-DD')
+                } else if (cMassUnit == '2') {
+                  this.form.dVdate = new dayjs(dMdate).add(iMassDate, 'month').format('YYYY-MM-DD')
+                } else if (cMassUnit == '3') {
+                  this.form.dVdate = new dayjs(dMdate).add(iMassDate, 'day').format('YYYY-MM-DD')
                 }
-
-                this.form.cBoxNO = this.form.cBarcode
-                this.form.iChangRate = iChangRate
-                //todo 多计量计算
-                this.form.iNum = 0
-
-                const cacheRows = this.cacheList.filter(f => {
-                  return f.cInvCode == cInvCode
-                })
-                const total = cacheRows
-                  .map(f => f.iQuantity)
-                  .reduce((sum, item) => {
-                    return floatAdd(sum, item)
-                  }, 0)
-                this.form.iCommitQuantity = total
-
-                this.form.iRowno = row.iRowno
-                this.form.iPlanQuantity = row.iQuantity2
-
-                this.form.cSourceBillID = row.ID //源单ID
-                this.form.cSourceBillNo = row.cCode //源单单号
-                this.form.cSourceBillEntryID = row.Autoid //源单表体ID
-
-                // if (this.control.usePos) {
-                //   this.form.cPosName = ''
-                // } else {
-                this.form.cBarcode = ''
-                // }
-                // this.curEle = 'ele_iQuantity'
-
-                this.onSubmit()
-              } else {
-                this.form.cBarcode = ''
-                this.curEle = 'ele_cBarcode'
-                return this.$toast({
-                  type: 'fail',
-                  message: '当前存货不在源单内!',
-                  onOpened: () => {
-                    this.setFocus(true)
-                  }
-                })
               }
+
+              this.form.barcode = this.form.cBarcode
+              this.form.iChangRate = iChangRate
+              //todo 多计量计算
+              this.form.iNum = 0
+
+              const cacheRows = this.cacheList.filter(f => {
+                return f.cInvCode == FInvCode
+              })
+              const total = cacheRows
+                .map(f => f.iQuantity)
+                .reduce((sum, item) => {
+                  return floatAdd(sum, item)
+                }, 0)
+              this.form.iCommitQuantity = total
+
+              this.form.iRowno = row.iRowno
+              this.form.iPlanQuantity = row.iQuantity2
+
+              this.form.cSourceBillID = row.ID //源单ID
+              this.form.cSourceBillNo = row.cCode //源单单号
+              this.form.cSourceBillEntryID = row.Autoid //源单表体ID
+
+              // if (this.control.usePos) {
+              //   this.form.cPosName = ''
+              // } else {
+              this.form.cBarcode = ''
+              // }
+              // this.curEle = 'ele_iQuantity'
+
+              this.onSubmit()
+            } else {
+              this.form.cBarcode = ''
+              this.curEle = 'ele_cBarcode'
+              return this.$toast({
+                type: 'fail',
+                message: '当前存货不在源单内!',
+                onOpened: () => {
+                  this.setFocus(true)
+                }
+              })
             }
           } else {
-            this.form.cBarcode = ''
             this.curEle = 'ele_cBarcode'
             return this.$toast({
               type: 'fail',
               message: '未能查询到存货信息!',
               onOpened: () => {
+                this.form.cBarcode = ''
                 this.setFocus(true)
               }
             })
@@ -816,24 +719,24 @@ export default {
 
       this.onSubmit()
     },
-    clearForm() {
-      // for (const key in this.form) {
-      //   if (this.$store.getters.numProps.includes(key)) {
-      //     this.form[key] = 0
-      //   } else {
-      //     this.form[key] = ''
-      //   }
-      // }
-      this.form.cBarcode = ''
-
-      // this.control.useBatch = false
-      // this.control.useQuality = false
-      // this.control.groupType = 1
-      // if (this.control.usePos) {
-      //   this.curEle = 'ele_cPosName'
-      // } else {
-      //   this.curEle = 'ele_cBarcode'
-      // }
+    clearForm(flag) {
+      for (const key in this.form) {
+        if (key == 'cBarcode') {
+          if (this.$store.getters.numProps.includes(key)) {
+            this.form[key] = 0
+          } else {
+            this.form[key] = ''
+          }
+        }
+      }
+      this.control.useBatch = false
+      this.control.useQuality = false
+      this.control.groupType = 1
+      if (this.control.usePos) {
+        this.curEle = flag ? 'ele_cBarcode' : 'ele_cPosName'
+      } else {
+        this.curEle = 'ele_cBarcode'
+      }
       this.setFocus()
     },
     onFocus(e) {
@@ -1014,17 +917,17 @@ export default {
 
   .list0,
   .list {
-    height: calc(100vh - 210px);
+    height: calc(100vh - 200px);
     overflow: scroll;
   }
 
   .sourceList {
-    height: calc(100vh - 210px);
+    height: calc(100vh - 200px);
     overflow: scroll;
   }
 
   .list1 {
-    height: calc(100vh - 260px);
+    height: calc(100vh - 255px);
     overflow: scroll;
   }
 
