@@ -134,7 +134,6 @@
               ref="ele_cBatch"
               v-model="form.cBatch"
               readonly
-              v-if="false"
               placeholder="批号"
               v-show="showBatch"
             ></van-field>
@@ -468,7 +467,7 @@ export default {
           this.setFocus()
         })
     },
-    queryInv() { 
+    queryInv() {
       if (this.control.usePos && this.form.cPosCode == '') {
         return this.$toast({
           type: 'fail',
@@ -666,6 +665,9 @@ export default {
     },
     defWhCode() {
       return this.$store.getters.defWhCode || ''
+    },
+    defRdCode() {
+      return this.$store.getters.defRdCode || ''
     }
   },
   created() {
@@ -732,7 +734,7 @@ export default {
           this.sources.rdList = Data
           if (Data.length > 0) {
             const f = Data.filter(f => {
-              return f.cRdCode == (this.queryForm.cRdCode || '')
+              return f.cRdCode == this.defRdCode
             })
             const { cRdCode, cRdName } = f.length > 0 ? f[0] : Data[0]
             this.headForm.cRdCode = cRdCode

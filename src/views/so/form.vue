@@ -432,7 +432,7 @@ export default {
                 message: '提交成功!',
                 onClose: () => {
                   this.submitLoading = false
-                  this.$router.go(-1) 
+                  this.$router.go(-1)
                 }
               })
             })
@@ -603,7 +603,7 @@ export default {
               this.control.useBatch = bInvBatch //是否批次管理
               this.control.useQuality = bInvQuality //是否保质期管理
               this.control.groupType = iGroupType //单位组类别 0 无换算、 1 固定换算、2 浮动换算
-
+ 
               this.form.cInvCode = FInvCode
               this.form.cInvName = FInvName
               this.form.cInvStd = FInvStd
@@ -642,13 +642,13 @@ export default {
                   return floatAdd(sum, item)
                 }, 0)
               this.form.iCommitQuantity = total
-
-              this.form.iRowno = row.iRowno
+ 
+              this.form.iRowno = row.FMORowNo
               this.form.iPlanQuantity = row.iQuantity2
 
-              this.form.cSourceBillID = row.ID //源单ID
-              this.form.cSourceBillNo = row.cCode //源单单号
-              this.form.cSourceBillEntryID = row.Autoid //源单表体ID
+              this.form.cSourceBillID = row.FMOID //源单ID
+              this.form.cSourceBillNo = row.FMOCode //源单单号
+              this.form.cSourceBillEntryID = row.FMODID //源单表体ID
 
               // if (this.control.usePos) {
               //   this.form.cPosName = ''
@@ -820,6 +820,9 @@ export default {
     },
     defWhCode() {
       return this.$store.getters.defWhCode || ''
+    },
+    defRdCode() {
+      return this.$store.getters.defRdCode || ''
     }
   },
   created() {
@@ -871,7 +874,7 @@ export default {
           this.sources.rdList = Data
           if (Data.length > 0) {
             const { cRdCode, cRdName } = Data.filter(f => {
-              return f.cRdCode == this.queryForm.cRdCode
+              return f.cRdCode == this.defRdCode
             })[0]
             this.headForm.cRdCode = cRdCode
             this.headForm.cRdName = cRdName

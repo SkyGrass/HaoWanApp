@@ -1,7 +1,8 @@
 const state = {
   showRedBlue: false,
   targetUrl: '',
-  defWhCode: ''
+  defWhCode: '',
+  defRdCode: ''
 }
 const mutations = {
   SET_SHOW_RED_BLUE(state, showRedBlue) {
@@ -12,6 +13,9 @@ const mutations = {
   },
   SET_DEF_WHCODE(state, whCode) {
     state.defWhCode = whCode
+  },
+  SET_DEF_RDCODE(state, rdCode) {
+    state.defRdCode = rdCode
   }
 }
 const actions = {
@@ -23,6 +27,9 @@ const actions = {
   },
   setDefWhCode({ commit }, arg) {
     commit('SET_DEF_WHCODE', arg)
+  },
+  setDefRdCode({ commit }, arg) {
+    commit('SET_DEF_RDCODE', arg)
   }
 }
 export default {

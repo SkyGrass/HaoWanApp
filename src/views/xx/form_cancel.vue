@@ -72,7 +72,7 @@
           </div>
           <div class="btns">
             <van-button class="btn" size="small" @click="doClear">清空</van-button>
-            <van-button class="btn submit" size="small" @click="inputQuantity">保存</van-button>
+            <!-- <van-button class="btn submit" size="small" @click="inputQuantity">保存</van-button> -->
           </div>
         </div>
       </van-tab>

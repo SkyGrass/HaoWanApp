@@ -10,8 +10,8 @@
       >
         <li style="padding: 2px">日期：{{ source.dDate }}</li>
         <li style="padding: 2px; width: 100%; display: inline-flex; justify-content: space-between">
-          <div>生产订单：{{ source.MODID }}</div>
-          <div>行号：{{ source.Autoid }}</div>
+          <div>生产订单：{{ source.cCode }}</div>
+          <div>行号：{{ source.iVouchRowno }}</div>
         </li>
         <li style="padding: 2px">存货编码：{{ source.cInvCode }}</li>
         <li style="padding: 2px">存货名称：{{ source.cInvName }}</li>
@@ -246,37 +246,7 @@ export default {
         .finally(() => {
           this.setFocus()
         })
-    },
-    inputQuantity() {
-      if (this.form.iQuantity == '') {
-        this.form.iQuantity = ''
-        this.curEle = 'ele_iQuantity'
-        return this.$toast({
-          type: 'fail',
-          message: '请先录入数量',
-          onOpened: () => {
-            this.setFocus(true)
-          }
-        })
-      }
-      if (this.form.iVouchRowno == '') {
-        this.form.iQuantity = ''
-        if (this.form.cPosCode == '') {
-          this.curEle = 'ele_cPosName'
-        } else if (this.form.cBarcode == '') {
-          this.curEle = 'ele_cBarcode'
-        }
-        return this.$toast({
-          type: 'fail',
-          message: '请按流程进行扫描!',
-          onOpened: () => {
-            this.setFocus()
-          }
-        })
-      }
-
-      this.onSubmit()
-    },
+    }, 
     clearForm(flag) {
       for (const key in this.form) {
         if (this.$store.getters.numProps.includes(key)) {

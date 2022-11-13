@@ -50,8 +50,9 @@ export default {
     }
   },
   methods: {
-    redirect({ id, path, whCode }) {
+    redirect({ id, path, whCode, rdCode }) {
       this.$store.dispatch('setDefWhCode', whCode)
+      this.$store.dispatch('setDefRdCode', rdCode)
       const children = this.origin.filter(f => f.FParentID == id)
       if (children.length > 0) {
         //展示子集
@@ -67,7 +68,8 @@ export default {
           query: {
             t: new Date() * 1,
             from: id,
-            whCode: whCode
+            whCode: whCode,
+            rdCode: rdCode
           }
         })
       }
@@ -82,7 +84,8 @@ export default {
           icon: m.FImage || 'icon_list.png',
           label: m.FName,
           path: m.FUrl,
-          whCode: m.FDefaultWhCode
+          whCode: m.FDefaultWhCode,
+          rdCode: m.FDefaultRdCode
         }
       })
     })

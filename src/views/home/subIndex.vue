@@ -69,7 +69,8 @@ export default {
           icon: m.FImage || 'icon_list.png',
           label: m.FName,
           path: m.FUrl,
-          whCode: m.FDefaultWhCode
+          whCode: m.FDefaultWhCode,
+          rdCode: m.FDefaultRdCode
         }
       })
     })

@@ -53,8 +53,8 @@
             >
               <li style="padding: 2px">日期：{{ source.dDate }}</li>
               <li style="padding: 2px; width: 80%; display: inline-flex; justify-content: space-between">
-                <div>生产订单：{{ source.MODID }}</div>
-                <div>行号：{{ source.Autoid }}</div>
+                <div>生产订单：{{ source.cCode }}</div>
+                <div>行号：{{ source.iVouchRowno }}</div>
               </li>
               <li style="padding: 2px">存货编码：{{ source.cInvCode }}</li>
               <li style="padding: 2px">存货名称：{{ source.cInvName }}</li>
