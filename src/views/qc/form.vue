@@ -445,7 +445,7 @@ export default {
 
   .list0,
   .list {
-    height: calc(100vh - 210px);
+    height: calc(100vh - 50px);
     overflow: scroll;
   }
 
@@ -455,7 +455,7 @@ export default {
   }
 
   .list1 {
-    height: calc(100vh - 90px);
+    height: calc(100vh - 95px);
     overflow: scroll;
   }
 

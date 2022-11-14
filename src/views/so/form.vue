@@ -389,45 +389,30 @@ export default {
           const { accountId } = this.$store.getters
           const form = Object.assign({}, this.headForm, {
             cSign: this.cSign,
-            FROB: this.queryForm.redblue == '1' ? '1' : '-1',
             cCusCode: this.queryForm.cCusCode,
             cAcc_Id: accountId
           })
           saveProStockOut(
-            Object.assign(
-              {},
-              [form].map(m => {
+            Object.assign({}, form, {
+              Entry: this.cacheList.map(m => {
                 return {
-                  cSign: m.cSign,
-                  FROB: m.FROB,
-                  cAcc_Id: m.cAcc_Id,
-                  cCusCode: m.cCusCode,
-                  cWhCode: m.cWhCode,
-                  cRdCode: m.cRdCode,
-                  cDepCode: m.cDepCode,
-                  cMemo: m.cMemo
+                  cBarcode: m.barcode,
+                  cSourceBillID: m.cSourceBillID,
+                  cSourceBillNo: m.cSourceBillNo,
+                  cSourceBillEntryID: m.cSourceBillEntryID,
+                  cInvCode: m.cInvCode,
+                  cPosCode: m.cPosCode,
+                  cBatch: m.cBatch,
+                  iMassDate: m.iMassDate,
+                  cMassUnit: m.cMassUnit,
+                  dMdate: m.dMdate,
+                  dVdate: m.dVdate,
+                  iQuantity: m.iQuantity,
+                  iChangRate: m.iChangRate,
+                  iNum: m.iNum
                 }
-              })[0],
-              {
-                Entry: this.cacheList.map(m => {
-                  return {
-                    cSourceBillID: m.cSourceBillID,
-                    cSourceBillNo: m.cSourceBillNo,
-                    cSourceBillEntryID: m.cSourceBillEntryID,
-                    cInvCode: m.cInvCode,
-                    cPosCode: m.cPosCode,
-                    cBatch: m.cBatch,
-                    iMassDate: m.iMassDate,
-                    cMassUnit: m.cMassUnit,
-                    dMdate: m.dMdate,
-                    dVdate: m.dVdate,
-                    iQuantity: m.iQuantity,
-                    iChangRate: m.iChangRate,
-                    iNum: m.iNum
-                  }
-                })
-              }
-            )
+              })
+            })
           )
             .then(({ Data, Message }) => {
               this.$toast({
@@ -576,10 +561,6 @@ export default {
         .then(({ Data }) => {
           if (Data.length > 0) {
             const {
-              FMOCode,
-              FMOID,
-              FMODID,
-              FMORowNo,
               FInvCode,
               FInvName,
               FInvStd,
@@ -646,12 +627,12 @@ export default {
                 }, 0)
               this.form.iCommitQuantity = total
 
-              this.form.iRowno = row.FMORowNo
+              this.form.iRowno = row.iRowno
               this.form.iPlanQuantity = row.iQuantity2
 
-              this.form.cSourceBillID = row.FMOID //源单ID
-              this.form.cSourceBillNo = row.FMOCode //源单单号
-              this.form.cSourceBillEntryID = row.FMODID //源单表体ID
+              this.form.cSourceBillID = row.ID //源单ID
+              this.form.cSourceBillNo = row.cCode //源单单号
+              this.form.cSourceBillEntryID = row.Autoid //源单表体ID
 
               // if (this.control.usePos) {
               //   this.form.cPosName = ''
