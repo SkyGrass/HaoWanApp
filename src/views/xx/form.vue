@@ -103,7 +103,7 @@ export default {
         })
     },
     doClear() {
-      this.clearForm()
+      this.clearForm(0)
     },
     onSubmit() {
       if (this.checkPlan()) {
@@ -136,7 +136,7 @@ export default {
         }
       })
 
-      this.clearForm()
+      this.clearForm(1)
     },
     onSave() {
       this.$dialog
@@ -249,13 +249,27 @@ export default {
     }, 
     clearForm(flag) {
       for (const key in this.form) {
-        if (this.$store.getters.numProps.includes(key)) {
-          this.form[key] = 0
-        } else {
-          this.form[key] = ''
+        if (flag == 0) {
+          //手动清除
+          if (this.$store.getters.numProps.includes(key)) {
+            this.form[key] = 0
+          } else {
+            this.form[key] = ''
+          }
+        } else if (flag == 1) {
+          if (key == 'cBarcode') {
+            //只清空 cBarcode
+            if (this.$store.getters.numProps.includes(key)) {
+              this.form[key] = 0
+            } else {
+              this.form[key] = ''
+            }
+          }
         }
       }
+
       this.curEle = 'ele_cBarcode'
+
       this.setFocus()
     },
     onFocus(e) {
@@ -295,7 +309,7 @@ export default {
   height: 100vh;
   .list0 {
     .cacheList {
-      height: calc(100vh - 350px);
+      height: calc(100vh - 340px);
       overflow: scroll;
     }
   }

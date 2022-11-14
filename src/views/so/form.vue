@@ -147,12 +147,14 @@
               ref="ele_iQuantity"
               v-model="form.iQuantity"
               id="ele_iQuantity"
-              readonly
+              :readonly="control.readOnly_iQuantity"
             ></van-field>
           </div>
           <div class="btns">
             <van-button class="btn" size="small" @click="doClear">清空</van-button>
-            <van-button class="btn submit" size="small" @click="inputQuantity">保存</van-button>
+            <van-button class="btn submit" size="small" @click="inputQuantity" v-if="!control.readOnly_iQuantity"
+              >保存</van-button
+            >
           </div>
         </div>
       </van-tab>
@@ -213,7 +215,7 @@
               <li style="padding: 2px">规格型号：{{ item.cInvStd }}</li>
               <li style="padding: 2px">单位：{{ item.cComUnitName }}</li>
               <li style="padding: 2px; width: 80%; display: inline-flex; justify-content: space-between">
-                <div>批号：{{ item.cBatch }}</div>
+                <div v-if="showBatch">批号：{{ item.cBatch }}</div>
                 <div>数量：{{ item.iQuantity }}</div>
               </li>
             </ul>
@@ -273,7 +275,8 @@ export default {
         usePos: false,
         useBatch: false,
         useQuality: false,
-        groupType: 1
+        groupType: 1,
+        readOnly_iQuantity: true
       },
       cSign: newGuid(),
       form: {
@@ -345,7 +348,7 @@ export default {
         })
     },
     doClear() {
-      this.clearForm()
+      this.clearForm(0)
     },
     onSubmit() {
       // 红字检查库存
@@ -373,7 +376,7 @@ export default {
 
       this.cacheList.push(Object.assign({}, this.form))
 
-      this.clearForm()
+      this.clearForm(1)
     },
     onSave() {
       this.$dialog
@@ -603,7 +606,7 @@ export default {
               this.control.useBatch = bInvBatch //是否批次管理
               this.control.useQuality = bInvQuality //是否保质期管理
               this.control.groupType = iGroupType //单位组类别 0 无换算、 1 固定换算、2 浮动换算
- 
+
               this.form.cInvCode = FInvCode
               this.form.cInvName = FInvName
               this.form.cInvStd = FInvStd
@@ -642,7 +645,7 @@ export default {
                   return floatAdd(sum, item)
                 }, 0)
               this.form.iCommitQuantity = total
- 
+
               this.form.iRowno = row.FMORowNo
               this.form.iPlanQuantity = row.iQuantity2
 
@@ -657,7 +660,9 @@ export default {
               // }
               // this.curEle = 'ele_iQuantity'
 
-              this.onSubmit()
+              if (this.control.readOnly_iQuantity) {
+                this.onSubmit()
+              }
             } else {
               this.form.cBarcode = ''
               this.curEle = 'ele_cBarcode'
@@ -721,19 +726,31 @@ export default {
     },
     clearForm(flag) {
       for (const key in this.form) {
-        if (key == 'cBarcode') {
+        if (flag == 0) {
+          //手动清除
           if (this.$store.getters.numProps.includes(key)) {
             this.form[key] = 0
           } else {
             this.form[key] = ''
           }
+        } else if (flag == 1) {
+          if (key == 'cBarcode') {
+            //只清空 cBarcode
+            if (this.$store.getters.numProps.includes(key)) {
+              this.form[key] = 0
+            } else {
+              this.form[key] = ''
+            }
+          }
         }
       }
-      this.control.useBatch = false
-      this.control.useQuality = false
-      this.control.groupType = 1
+      if (flag == 0) {
+        this.control.useBatch = false
+        this.control.useQuality = false
+        this.control.groupType = 1
+      }
       if (this.control.usePos) {
-        this.curEle = flag ? 'ele_cBarcode' : 'ele_cPosName'
+        this.curEle = flag == 1 ? 'ele_cBarcode' : 'ele_cPosName'
       } else {
         this.curEle = 'ele_cBarcode'
       }

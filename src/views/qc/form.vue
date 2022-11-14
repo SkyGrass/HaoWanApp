@@ -72,7 +72,7 @@
           </div>
           <div class="btns">
             <van-button class="btn" size="small" @click="doClear">清空</van-button>
-            <van-button class="btn submit" size="small" @click="inputQuantity">保存</van-button>
+            <!-- <van-button class="btn submit" size="small" @click="inputQuantity">保存</van-button> -->
           </div>
         </div>
       </van-tab>
@@ -168,7 +168,7 @@ export default {
         })
     },
     doClear() {
-      this.clearForm()
+      this.clearForm(0)
     },
     onSubmit() {
       var exist = this.cacheList.filter(f => f.barcode == this.form.cBarcode)
@@ -193,7 +193,7 @@ export default {
         this.cacheList.push(Object.assign({}, this.form))
       }
 
-      this.clearForm()
+      this.clearForm(1)
     },
     onSave() {
       this.$dialog
@@ -356,22 +356,27 @@ export default {
     },
     clearForm(flag) {
       for (const key in this.form) {
-        if (key == 'cBarcode') {
+        if (flag == 0) {
+          //手动清除
           if (this.$store.getters.numProps.includes(key)) {
             this.form[key] = 0
           } else {
             this.form[key] = ''
           }
+        } else if (flag == 1) {
+          if (key == 'cBarcode') {
+            //只清空 cBarcode
+            if (this.$store.getters.numProps.includes(key)) {
+              this.form[key] = 0
+            } else {
+              this.form[key] = ''
+            }
+          }
         }
       }
-      this.control.useBatch = false
-      this.control.useQuality = false
-      this.control.groupType = 1
-      if (this.control.usePos) {
-        this.curEle = flag ? 'ele_cBarcode' : 'ele_cPosName'
-      } else {
-        this.curEle = 'ele_cBarcode'
-      }
+
+      this.curEle = 'ele_cBarcode'
+
       this.setFocus()
     },
     onFocus(e) {
@@ -450,7 +455,7 @@ export default {
   }
 
   .list1 {
-    height: calc(100vh - 260px);
+    height: calc(100vh - 90px);
     overflow: scroll;
   }
 

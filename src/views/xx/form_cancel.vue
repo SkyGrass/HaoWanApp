@@ -168,7 +168,7 @@ export default {
         })
     },
     doClear() {
-      this.clearForm()
+      this.clearForm(0)
     },
     onSubmit() {
       var exist = this.cacheList.filter(f => f.barcode == this.form.cBarcode)
@@ -193,7 +193,7 @@ export default {
         this.cacheList.push(Object.assign({}, this.form))
       }
 
-      this.clearForm()
+      this.clearForm(1)
     },
     onSave() {
       this.$dialog
@@ -324,54 +324,29 @@ export default {
           this.setFocus()
         })
     },
-    inputQuantity() {
-      if (this.form.iQuantity == '') {
-        this.form.iQuantity = ''
-        this.curEle = 'ele_iQuantity'
-        return this.$toast({
-          type: 'fail',
-          message: '请先录入数量',
-          onOpened: () => {
-            this.setFocus(true)
-          }
-        })
-      }
-      if (this.form.iVouchRowno == '') {
-        this.form.iQuantity = ''
-        if (this.form.cPosCode == '') {
-          this.curEle = 'ele_cPosName'
-        } else if (this.form.cBarcode == '') {
-          this.curEle = 'ele_cBarcode'
-        }
-        return this.$toast({
-          type: 'fail',
-          message: '请按流程进行扫描!',
-          onOpened: () => {
-            this.setFocus()
-          }
-        })
-      }
-
-      this.onSubmit()
-    },
     clearForm(flag) {
       for (const key in this.form) {
-        if (key == 'cBarcode') {
+        if (flag == 0) {
+          //手动清除
           if (this.$store.getters.numProps.includes(key)) {
             this.form[key] = 0
           } else {
             this.form[key] = ''
           }
+        } else if (flag == 1) {
+          if (key == 'cBarcode') {
+            //只清空 cBarcode
+            if (this.$store.getters.numProps.includes(key)) {
+              this.form[key] = 0
+            } else {
+              this.form[key] = ''
+            }
+          }
         }
       }
-      this.control.useBatch = false
-      this.control.useQuality = false
-      this.control.groupType = 1
-      if (this.control.usePos) {
-        this.curEle = flag ? 'ele_cBarcode' : 'ele_cPosName'
-      } else {
-        this.curEle = 'ele_cBarcode'
-      }
+
+      this.curEle = 'ele_cBarcode'
+
       this.setFocus()
     },
     onFocus(e) {
@@ -450,7 +425,7 @@ export default {
   }
 
   .list1 {
-    height: calc(100vh - 260px);
+    height: calc(100vh - 90px);
     overflow: scroll;
   }
 
