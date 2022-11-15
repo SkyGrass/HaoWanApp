@@ -420,6 +420,7 @@ export default {
                 message: '提交成功!',
                 onClose: () => {
                   this.submitLoading = false
+                  this.cacheList = []
                   this.$router.go(-1)
                 }
               })
